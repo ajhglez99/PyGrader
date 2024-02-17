@@ -1,6 +1,6 @@
 import unittest
 
-from pygrader import Grader, GraderError, Status
+from pycomgrader import Grader, GraderError, Status
 
 
 class PyGraderTest(unittest.TestCase):
