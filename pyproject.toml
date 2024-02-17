@@ -15,11 +15,8 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 keywords = ["competitive programming", "educational", "grader", "c++"]
-dependencies = ["psutil"]
+dependencies = ["psutil", "pathtype", "rich"]
 requires-python = ">=3.7"
-
-[project.optional-dependencies]
-dev = ["pathtype", "rich"]
 
 [project.urls]
 Homepage = "https://github.com/ajhglez99/PyGrader"

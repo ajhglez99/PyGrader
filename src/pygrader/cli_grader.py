@@ -6,7 +6,7 @@ from enum import Enum
 from pathlib import Path
 from time import sleep
 
-from pygrader.pygrader import Grader, GraderError, Status
+from pygrader import Grader, GraderError, Status
 from rich.console import Console
 
 

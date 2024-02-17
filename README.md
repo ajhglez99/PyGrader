@@ -25,8 +25,8 @@ Getting Started
 To start using PyGrader, follow these steps:
 
 1. Install PyGrader by running `pip install pygrader` in your terminal.
-2. Import the necessary modules: `import pygrader` or `from pygrader import Grade`.
-3. Create a `Grade` object with the file to test, time limit, and memory limit: `grader = Grade(2000, 128, exec_file = 'my_program')`
+2. Import the necessary modules: `from pygrader import Grader`.
+3. Create a `Grader` object with the file to test, time limit, and memory limit: `grader = Grader(2000, 128, exec_file = 'my_program')`
 4. Create a corresponding directory for the test cases, and place the input files (with the extension `.in`) and expected output files (with the extension `.out`) inside. The filenames for the input and output files can be arbitrary, but they must have the same name. For example, you can have 01.in, 01.out, 02.in, 02.out, etc.
 5. Test the program against one or more test cases using the `grader.grade('test_cases_dir')` method.
 
