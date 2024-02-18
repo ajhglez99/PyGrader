@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pycomgrader"
 version = "1.0.1"
-description = "this module provides a grader for c++ programs."
+description = "This module provides a grader for c++ programs."
 readme = "README.md"
 authors = [{ name = "Anibal Hernández"}]
 license = { file = "LICENSE" }

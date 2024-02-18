@@ -11,7 +11,7 @@ Features
 
 The following features are included in PyComGrader:
 
-* Initialize a `Grade` class with a file to test, a time limit, and a memory limit.
+* Initialize a `Grader` class with a file to test, a time limit, and a memory limit.
 * Automatic comparison of outputs: PyComGrader automatically compares the program's output to the expected output.
 * Methods to test the given input against sets of test cases or individual tests.
 * Support for both a command-line interface and Python API.
@@ -45,25 +45,8 @@ One of the key features of PyComGrader is its ability to execute C++ programs di
 ```bash
 $ pycomgrader my_program test_cases_dir -e
 ```
-This will tell PyComGrader to execute the contents of `my_program.cpp` directly, rather than compiling it first.
+This will tell PyComGrader to execute the contents of `my_program` directly, rather than compiling it first.
 
-Help
-----
-
-For detailed usage information, run `pycomgrader --help`:
-```
-offline grader for C++ programs
-
-positional arguments:
-  file              path to the program to submit
-  dir               path to the directory containing the test cases
-  time              maximum amount of time (in milliseconds) to run the program
-  mem               maximum amount of memory (in megabytes) to allocate to the program
-
-options:
-  -h, --help        show this help message and exit
-  -e, --executable  notifies the grader that the file is executable
-```
 Requirements
 ------------
 
@@ -85,6 +68,20 @@ Here are some tips and tricks to help you get the most out of PyComGrader:
 
 * Use descriptive names for your test cases, so you can easily identify what each test case is checking.
 * Write comprehensive test cases to cover all aspects of the student's code.
+* For detailed usage information, run `pycomgrader --help`:
+  ```
+  offline grader for C++ programs
+
+  positional arguments:
+    file              path to the program to submit
+    dir               path to the directory containing the test cases
+    time              maximum amount of time (in milliseconds) to run the program
+    mem               maximum amount of memory (in megabytes) to allocate to the program
+
+  options:
+    -h, --help        show this help message and exit
+    -e, --executable  notifies the grader that the file is executable
+  ```
 
 Troubleshooting
 ---------------
