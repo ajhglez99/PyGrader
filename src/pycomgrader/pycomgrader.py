@@ -192,7 +192,7 @@ class Grader:
         with open(input_file) as in_file, open(subm_output, "w") as out_file:
             try:
                 proc = subprocess.Popen(
-                    [self.exec_file],
+                    [("./" + str(self.exec_file))],
                     stdin=in_file,
                     stdout=out_file,
                     stderr=subprocess.DEVNULL,
