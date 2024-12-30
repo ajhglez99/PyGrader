@@ -1,7 +1,10 @@
+"""
+This module provides a command-line interface (CLI) for grading C++ programs.
+"""
+
 import argparse
 from enum import Enum
 from pathlib import Path
-from time import sleep
 
 import pathtype
 from rich.console import Console
@@ -74,23 +77,28 @@ def _grade(
 ):
     """Grades a C++ program using PyGrader."""
 
-    if executable:
-        grader = Grader(exec_file=file, time_limit=time, memory_limit=mem)
-    else:
-        grader = Grader(source_file=file, time_limit=time, memory_limit=mem)
+    grader = (
+        Grader(exec_file=file, time_limit=time, memory_limit=mem)
+        if executable
+        else Grader(source_file=file, time_limit=time, memory_limit=mem)
+    )
 
-    accepted = 0
     console = Console()
-
     try:
         results = grader.grade(directory)
     except GraderError:
         console.print(StatusMessage.CE.value)
         return
 
+    _print_results(console, file, results)
+
+
+def _print_results(console, file, results):
+    """Prints the results of the grading process."""
+
+    accepted = 0
     with console.status(f"[bold]running {file.stem}...") as _status:
         for result in results:
-            sleep(0.3)
             message = (
                 f"test case {result.name}:\t{StatusMessage[result.status.name].value}\t"
                 + f"[{result.time:.3f} s,{result.mem:.2f} MB]"
@@ -103,3 +111,7 @@ def _grade(
         console.print(
             f"[bold]final score: {accepted}/{len(results)} ({points:.1f} points)"
         )
+
+
+if __name__ == "__main__":
+    cli_grader()

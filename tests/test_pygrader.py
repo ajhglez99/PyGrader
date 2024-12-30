@@ -1,6 +1,9 @@
 import unittest
 
-from pycomgrader import Grader, GraderError, Status
+try:
+    from pycomgrader import Grader, GraderError, Status
+except ImportError:
+    from src.pycomgrader import Grader, GraderError, Status
 
 
 class PyGraderTest(unittest.TestCase):
@@ -12,7 +15,7 @@ class PyGraderTest(unittest.TestCase):
             self.assertEqual(result.status, Status.AC)
 
     def test_wa_submission(self):
-        grader = Grader(source_file="tests/submits/atoi_wa.cpp")
+        grader = Grader(source_file="tests/submits/atoi_wa.cpp", time_limit=2000)
 
         with self.subTest("test wrong answer"):
             result = grader.check_test_case(

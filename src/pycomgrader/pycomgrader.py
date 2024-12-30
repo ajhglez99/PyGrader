@@ -187,52 +187,17 @@ class Grader:
         with open(input_file, encoding="UTF-8") as input_file_handle, open(
             submission_output, "w", encoding="UTF-8"
         ) as output_file_handle:
-            try:
-                process = subprocess.Popen(
-                    [("./" + str(self.exec_file))],
-                    stdin=input_file_handle,
-                    stdout=output_file_handle,
-                    stderr=subprocess.DEVNULL,
-                )
-            except Exception:
-                raise GraderError(f"error while executing {self.exec_file}") from None
-
+            process = self._start_process(input_file_handle, output_file_handle)
             start = time.perf_counter()
             end = time.perf_counter()
             max_mem = 0
-            status = Status.WA
-            error_message = None
 
-            while process.poll() is None:
-                end = time.perf_counter()
-                if end - start > self.time_limit:
-                    self._kill_process_rec(process.pid)
-                    status = Status.TLE
-                    break
+            status, error_message = self._monitor_process(process, start, max_mem)
 
-                max_mem = max(max_mem, self._get_process_memory(process.pid))
-                if max_mem > self.memory_limit:
-                    self._kill_process_rec(process.pid)
-                    status = Status.MLE
-                    break
-
-            if process.returncode and status == Status.WA:
-                status = Status.RTE
-
-            try:
-                with submission_output.open(
-                    encoding="UTF-8"
-                ) as submission_file, expected_output.open(
-                    encoding="UTF-8"
-                ) as expected_file:
-                    if (
-                        submission_file.read() == expected_file.read()
-                        and status == Status.WA
-                    ):
-                        status = Status.AC
-            except Exception as e:
-                status = Status.RTE
-                error_message = str(e)
+            if status is None:
+                status, error_message = self._compare_output(
+                    submission_output, expected_output
+                )
 
             return TestCase(input_file.stem, status, end - start, max_mem)
 
@@ -290,6 +255,47 @@ class Grader:
             self.exec_file = self._source_file.with_suffix(".o")
         except subprocess.CalledProcessError:
             raise GraderError("compile error") from None
+
+    def _start_process(self, input_file_handle, output_file_handle):
+        try:
+            return subprocess.Popen(
+                [("./" + str(self.exec_file))],
+                stdin=input_file_handle,
+                stdout=output_file_handle,
+                stderr=subprocess.DEVNULL,
+            )
+        except Exception:
+            raise GraderError(f"error while executing {self.exec_file}") from None
+
+    def _monitor_process(self, process, start, max_mem):
+        while process.poll() is None:
+            if self._is_time_limit_exceeded(start):
+                self._kill_process_rec(process.pid)
+                return Status.TLE, None
+
+            max_mem = max(max_mem, self._get_process_memory(process.pid))
+            if max_mem > self.memory_limit:
+                self._kill_process_rec(process.pid)
+                return Status.MLE, None
+
+        if process.returncode:
+            return Status.RTE, None
+
+        return None, None
+
+    def _compare_output(self, submission_output, expected_output):
+        try:
+            with submission_output.open(
+                encoding="UTF-8"
+            ) as subm_file, expected_output.open(encoding="UTF-8") as expected_file:
+                if subm_file.read() == expected_file.read():
+                    return Status.AC, None
+                return Status.WA, None
+        except Exception as e:
+            return Status.RTE, str(e)
+
+    def _is_time_limit_exceeded(self, start):
+        return time.perf_counter() - start > self.time_limit
 
     def _get_process_memory(self, proc_pid):
         """
