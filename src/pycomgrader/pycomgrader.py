@@ -2,6 +2,7 @@
 This module provides a grader for C++ programs.
 """
 
+import os
 import subprocess
 import time
 from dataclasses import dataclass
@@ -157,19 +158,19 @@ class Grader:
         ) as output_file_handle:
             process = self._start_process(input_file_handle, output_file_handle)
             start = time.perf_counter()
-            end = time.perf_counter()
             max_mem = 0
 
-            status, error_message = self._monitor_process(process, start, max_mem)
-
-            if status is None:
-                status, error_message = self._compare_output(
-                    submission_output, expected_output
-                )
-
-            return TestCase(
-                input_file.stem, status, end - start, max_mem, error_message
+            status, error_message, max_mem = self._monitor_process(
+                process, start, max_mem
             )
+            end = time.perf_counter()
+
+        if status is None:
+            status, error_message = self._compare_output(
+                submission_output, expected_output
+            )
+
+        return TestCase(input_file.stem, status, end - start, max_mem, error_message)
 
     def _valid_file(self, file):
         """
@@ -182,39 +183,39 @@ class Grader:
             Path: A `Path` instance representing the valid file
 
         Raises:
-            TypeError: If the file does not exist or is not a regular file.
+            FileNotFoundError: If the file does not exist or is not a regular file.
         """
         path = Path(file)
         if path.exists() and path.is_file():
             return path
 
-        raise TypeError(f"file doesn't exist ({file})")
+        raise FileNotFoundError(f"file doesn't exist ({file})")
 
     def _valid_dir(self, directory):
         """
         Returns a `Path` object if the directory exists and is a regular directory.
 
         Parameters:
-            file (str): Directory path or name
+            directory (str): Directory path or name
 
         Return:
             Path: A `Path` instance representing the valid directory
 
         Raises:
-            TypeError: If the directory does not exist or is not a regular directory.
+            FileNotFoundError: If the directory does not exist or is not a regular directory.
         """
         path = Path(directory)
         if path.exists() and path.is_dir():
             return path
 
-        raise TypeError(f"directory doesn't exist ({directory})")
+        raise FileNotFoundError(f"directory doesn't exist ({directory})")
 
     def _compile(self):
         """
         Compiles the submitted program.
 
         Raises:
-            GraderCompileError: If there are any compilation errors.
+            GraderError: If there are any compilation errors.
         """
         try:
             subprocess.check_output(
@@ -239,7 +240,7 @@ class Grader:
         """
         try:
             return subprocess.Popen(
-                [("./" + str(self.exec_file))],
+                [os.path.join(".", str(self.exec_file))],
                 stdin=input_file_handle,
                 stdout=output_file_handle,
                 stderr=subprocess.DEVNULL,
@@ -260,19 +261,20 @@ class Grader:
             tuple: The status and error message.
         """
         while process.poll() is None:
+            time.sleep(0.001)
             if self._is_time_limit_exceeded(start):
                 self._kill_process_rec(process.pid)
-                return Status.TLE, None
+                return Status.TLE, None, max_mem
 
             max_mem = max(max_mem, self._get_process_memory(process.pid))
             if max_mem > self.memory_limit:
                 self._kill_process_rec(process.pid)
-                return Status.MLE, None
+                return Status.MLE, None, max_mem
 
         if process.returncode:
-            return Status.RTE, None
+            return Status.RTE, None, max_mem
 
-        return None, None
+        return None, None, max_mem
 
     def _compare_output(self, submission_output, expected_output):
         """
@@ -292,8 +294,8 @@ class Grader:
                 if subm_file.read() == expected_file.read():
                     return Status.AC, None
                 return Status.WA, None
-        except Exception as e:
-            return Status.RTE, str(e)
+        except Exception:
+            raise GraderError("error while trying to open output files") from None
 
     def _is_time_limit_exceeded(self, start):
         """

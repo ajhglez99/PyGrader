@@ -45,10 +45,10 @@ class PyGraderTest(unittest.TestCase):
                 exec_file="tests/submits/atoi_wa.o",
             )
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(FileNotFoundError):
             Grader(source_file="asd*<>")
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(FileNotFoundError):
             grader = Grader(source_file="tests/submits/atoi_ac.cpp")
             grader.check_test_case("tests/testcases/01.in", "asd*<>")
 
