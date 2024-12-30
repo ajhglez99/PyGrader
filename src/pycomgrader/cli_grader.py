@@ -16,7 +16,9 @@ except ImportError:
 
 
 class StatusMessage(Enum):
-    """Enumeration class representing different status messages."""
+    """
+    Enumeration class representing different status messages.
+    """
 
     AC = "[bold green]accepted[/bold green]"
     WA = "[bold red]wrong answer[/bold red]"
@@ -27,8 +29,9 @@ class StatusMessage(Enum):
 
 
 def cli_grader():
-    """Command-line interface for grading C++ programs."""
-
+    """
+    Command-line interface for grading C++ programs.
+    """
     parser = argparse.ArgumentParser(description="offline grader for C++ programs")
     parser.add_argument(
         "file",
@@ -66,8 +69,12 @@ def cli_grader():
 
 
 def _validator_is_dir(path: Path, _arg: str):
-    """Validator function for ensuring that a path is a directory."""
+    """
+    Validator function for ensuring that a path is a directory.
 
+    Raises:
+        argparse.ArgumentTypeError: If the path is not a directory.
+    """
     if not path.is_dir() or not path.exists():
         raise argparse.ArgumentTypeError(f"directory doesn't exist ({path})")
 
@@ -75,8 +82,18 @@ def _validator_is_dir(path: Path, _arg: str):
 def _grade(
     file: str | Path, directory: str | Path, time=1000, mem=32, executable=False
 ):
-    """Grades a C++ program using PyGrader."""
+    """
+    Grades a C++ program using PyComGrader.
 
+    Parameters:
+        file (str | Path): The path to the program file.
+        directory (str | Path): The path to the directory containing the test cases.
+        time (int, optional): The maximum amount of time (in milliseconds) to run the program. Defaults to 1000.
+        mem (int, optional): The maximum amount of memory (in MB) to use for the program.
+        Defaults to 32.
+        executable (bool, optional): Whether the file is an executable.
+        Defaults to False.
+    """
     grader = (
         Grader(exec_file=file, time_limit=time, memory_limit=mem)
         if executable
@@ -94,8 +111,14 @@ def _grade(
 
 
 def _print_results(console, file, results):
-    """Prints the results of the grading process."""
+    """
+    Prints the results of the grading process.
 
+    Parameters:
+        console (Console): The console object for printing.
+        file (Path): The path to the program file.
+        results (List[TestCase]): The list of test case results.
+    """
     accepted = 0
     with console.status(f"[bold]running {file.stem}...") as _status:
         for result in results:

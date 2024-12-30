@@ -13,13 +13,13 @@ import psutil
 
 class GraderError(Exception):
     """
-    An exception raised when there's an error while grading a submission.
+    Raised when there's an error while grading a submission.
     """
 
 
 class Status(Enum):
     """
-    An enumeration of possible statuses for a test case.
+    Possible statuses for a test case.
     """
 
     AC = auto()
@@ -32,56 +32,26 @@ class Status(Enum):
 @dataclass
 class TestCase:
     """
-    A class representing a test case.
+    Represents a test case.
 
     Attributes:
-        name: str
-            The name of the test case.
-        status: Status
-            The status of the test case (either AC, WA, TLE, MLE, or RTE).
-        time: float
-            The time taken by the program to complete the test case.
-        mem: float
-            The maximum memory used by the program during the test case.
+        name (str): The name of the test case.
+        status (Status): The status of the test case.
+        time (float): The time taken by the program to complete the test case.
+        mem (float): The maximum memory used by the program during the test case.
+        error_message (str, optional): The error message if any.
     """
 
     name: str
     status: Status
     time: float
     mem: float
+    error_message: str = None
 
 
 class Grader:
     """
-    A class that manages the grading process for a programming assignment.
-
-    Attributes:
-        time_limit (int): The maximum amount of time (in milliseconds) allowed for the grading process.
-        memory_limit (int): The maximum amount of memory (in megabytes) allowed for the grading process.
-        source_file (str or Path): The path to the source code file to be graded.
-        exec_file (str or Path): The path to the executable file to be graded.
-
-    Methods:
-        grader(test_case_directory: str) -> List[TestCase]:
-            Graders the test cases in the given directory and returns a list of TestCase objects.
-
-        check_test_case(input_file: str, output_file: str) -> TestCase:
-            Checks a single test case by running the program with the given input and output files and returns a TestCase object.
-
-        _valid_file(file : str) -> Path:
-            Returns a `Path` object if the file exists and is a regular file.
-
-        _valid_dir(dir : str) -> Path:
-            Returns a `Path` object if the directory exists and is a regular directory.
-
-        _compile() -> None:
-            Compiles the source code file and raises a GraderException if there are any compilation errors.
-
-        _kill(pid: int) -> None:
-            Kills the process with the given PID and all its children.
-
-        _process_memory(pid: int) -> int:
-            Returns the resident set size (RSS) of the process with the given PID.
+    Manages the grading process for a programming assignment.
     """
 
     def __init__(
@@ -96,13 +66,18 @@ class Grader:
         Initializes a Grader instance.
 
         Parameters:
-            time_limit (int, optional): The maximum amount of time (in milliseconds) allowed for the grading process. Defaults to 1000.
-            memory_limit (int, optional): The maximum amount of memory (in megabytes) allowed for the grading process. Defaults to 32.
-            source_file (str or Path, optional): The path to the source code file to be graded. If not provided, an executable file must be provided.
-            exec_file (str or Path, optional): The path to the executable file to be graded. If not provided, a source file must be provided.
+            time_limit (int, optional): The maximum amount of time (in milliseconds) allowed
+            for the grading process. Defaults to 1000.
+            memory_limit (int, optional): The maximum amount of memory (in megabytes) allowed
+            for the grading process. Defaults to 32.
+            source_file (str or Path, optional): The path to the source code file to be graded.
+            If not provided, an executable file must be provided.
+            exec_file (str or Path, optional): The path to the executable file to be graded.
+            If not provided, a source file must be provided.
 
         Raises:
-            GraderError: If both a source file and an executable file are provided, or if neither a source file nor an executable file is provided.
+            GraderError: If both a source file and an executable file are provided,
+            or if neither a source file nor an executable file is provided.
         """
         if source_file and exec_file:
             raise GraderError(
@@ -154,7 +129,8 @@ class Grader:
             test_cases_dir (str | Path): The directory containing the test cases.
 
         Returns:
-            List[TestCase]: A list of `TestCase` objects, each representing a test case and containing information about its name, status, time, and memory usage.
+            List[TestCase]: A list of `TestCase` objects, each representing a test case
+            and containing information about its name, status, time, and memory usage.
         """
         test_cases_dir = self._valid_dir(test_cases_dir)
         in_list = sorted(test_cases_dir.glob("*.in"))
@@ -175,7 +151,8 @@ class Grader:
             expected_output (str | Path): The path to the expected output file for the test case.
 
         Returns:
-            TestCase: An object containing information about the test case, including its name, status, execution time, and memory usage.
+            TestCase: An object containing information about the test case, including its name,
+            status, execution time, and memory usage.
         """
         if not self._compiled:
             self._compile()
@@ -199,7 +176,9 @@ class Grader:
                     submission_output, expected_output
                 )
 
-            return TestCase(input_file.stem, status, end - start, max_mem)
+            return TestCase(
+                input_file.stem, status, end - start, max_mem, error_message
+            )
 
     def _valid_file(self, file):
         """
@@ -257,6 +236,16 @@ class Grader:
             raise GraderError("compile error") from None
 
     def _start_process(self, input_file_handle, output_file_handle):
+        """
+        Starts the process for the submitted program.
+
+        Parameters:
+            input_file_handle (file object): The input file handle.
+            output_file_handle (file object): The output file handle.
+
+        Returns:
+            subprocess.Popen: The process object.
+        """
         try:
             return subprocess.Popen(
                 [("./" + str(self.exec_file))],
@@ -268,6 +257,17 @@ class Grader:
             raise GraderError(f"error while executing {self.exec_file}") from None
 
     def _monitor_process(self, process, start, max_mem):
+        """
+        Monitors the process for time and memory limits.
+
+        Parameters:
+            process (subprocess.Popen): The process object.
+            start (float): The start time.
+            max_mem (float): The maximum memory used.
+
+        Returns:
+            tuple: The status and error message.
+        """
         while process.poll() is None:
             if self._is_time_limit_exceeded(start):
                 self._kill_process_rec(process.pid)
@@ -284,6 +284,16 @@ class Grader:
         return None, None
 
     def _compare_output(self, submission_output, expected_output):
+        """
+        Compares the submission output with the expected output.
+
+        Parameters:
+            submission_output (Path): The path to the submission output file.
+            expected_output (Path): The path to the expected output file.
+
+        Returns:
+            tuple: The status and error message.
+        """
         try:
             with submission_output.open(
                 encoding="UTF-8"
@@ -295,6 +305,15 @@ class Grader:
             return Status.RTE, str(e)
 
     def _is_time_limit_exceeded(self, start):
+        """
+        Checks if the time limit is exceeded.
+
+        Parameters:
+            start (float): The start time.
+
+        Returns:
+            bool: True if the time limit is exceeded, False otherwise.
+        """
         return time.perf_counter() - start > self.time_limit
 
     def _get_process_memory(self, proc_pid):
@@ -314,17 +333,17 @@ class Grader:
         except psutil.NoSuchProcess:
             return 0
 
-    def _kill_process_rec(self, proc_pid):
+    def _kill_process_rec(self, pid):
         """
         Kills a process and all its children.
 
         Parameters:
-            proc_pid (int): The process ID of the process to kill.
+            pid (int): The process ID of the process to kill.
         """
         try:
-            process = psutil.Process(proc_pid)
-            for proc in process.children(recursive=True):
-                proc.kill()
-            process.kill()
+            parent = psutil.Process(pid)
+            for child in parent.children(recursive=True):
+                child.kill()
+            parent.kill()
         except psutil.NoSuchProcess:
             pass
