@@ -79,17 +79,16 @@ class Grader:
             GraderError: If both a source file and an executable file are provided,
             or if neither a source file nor an executable file is provided.
         """
-        if source_file and exec_file:
+        if (source_file is None) == (exec_file is None):
             raise GraderError(
                 "expected either a source code file or an executable but not both"
             )
-        if not source_file and not exec_file:
-            raise GraderError("expected either a source code file or an executable")
 
         self.time_limit = time_limit / 1000
         self.memory_limit = memory_limit
-        self.source_file = source_file
-        self.exec_file = exec_file
+        self._source_file = self._valid_file(source_file) if source_file else None
+        self._exec_file = self._valid_file(exec_file) if exec_file else None
+        self._compiled = bool(exec_file)
 
     @property
     def source_file(self):
@@ -97,14 +96,10 @@ class Grader:
 
     @source_file.setter
     def source_file(self, source_file):
-        if source_file is None:
-            self._source_file = None
-            return
-        path = self._valid_file(source_file)
-
-        self._source_file = path
-        self.exec_file = None
-        self._compiled = False
+        self._source_file = self._valid_file(source_file) if source_file else None
+        if self._source_file:
+            self._exec_file = None
+            self._compiled = False
 
     @property
     def exec_file(self):
@@ -112,14 +107,10 @@ class Grader:
 
     @exec_file.setter
     def exec_file(self, exec_file):
-        if exec_file is None:
-            self._exec_file = None
-            return
-        path = self._valid_file(exec_file)
-
-        self.source_file = None
-        self._exec_file = path
-        self._compiled = True
+        self._exec_file = self._valid_file(exec_file) if exec_file else None
+        if self._exec_file:
+            self._source_file = None
+            self._compiled = True
 
     def grade(self, test_cases_dir: str | Path):
         """
