@@ -1,13 +1,15 @@
 import argparse
-
-import pathtype
-
 from enum import Enum
 from pathlib import Path
 from time import sleep
 
-from pycomgrader import Grader, GraderError, Status
+import pathtype
 from rich.console import Console
+
+try:
+    from pycomgrader import Grader, GraderError, Status
+except ImportError:
+    from src.pycomgrader import Grader, GraderError, Status
 
 
 class StatusMessage(Enum):
@@ -67,10 +69,10 @@ def validator_is_dir(path: Path, _arg: str):
         raise argparse.ArgumentTypeError(f"directory doesn't exist ({path})")
 
 
-def grade(file, dir, time=1000, mem=32, exec=False):
+def grade(file, directory, time=1000, mem=32, executable=False):
     """Grades a C++ program using PyGrader."""
 
-    if exec:
+    if executable:
         grader = Grader(exec_file=file, time_limit=time, memory_limit=mem)
     else:
         grader = Grader(source_file=file, time_limit=time, memory_limit=mem)
@@ -79,7 +81,7 @@ def grade(file, dir, time=1000, mem=32, exec=False):
     console = Console()
 
     try:
-        results = grader.grade(dir)
+        results = grader.grade(directory)
     except GraderError:
         console.print(StatusMessage.CE.value)
         return

@@ -4,20 +4,17 @@ This module provides a grader for C++ programs.
 
 import subprocess
 import time
+from dataclasses import dataclass
+from enum import Enum, auto
+from pathlib import Path
 
 import psutil
-
-from enum import auto, Enum
-from dataclasses import dataclass
-from pathlib import Path
 
 
 class GraderError(Exception):
     """
     An exception raised when there's an error while grading a submission.
     """
-
-    pass
 
 
 class Status(Enum):
@@ -118,7 +115,6 @@ class Grader:
         self.memory_limit = memory_limit
         self.source_file = source_file
         self.exec_file = exec_file
-        self._compiled
 
     @property
     def source_file(self):
@@ -189,7 +185,9 @@ class Grader:
 
         subm_output = self.exec_file.with_suffix(".out.tmp")
 
-        with open(input_file) as in_file, open(subm_output, "w") as out_file:
+        with open(input_file, encoding="UTF-8") as in_file, open(
+            subm_output, "w", encoding="UTF-8"
+        ) as out_file:
             try:
                 proc = subprocess.Popen(
                     [("./" + str(self.exec_file))],
@@ -221,10 +219,11 @@ class Grader:
         if proc.returncode:
             return TestCase(input_file.stem, Status.RTE, end - start, max_mem / 1024**2)
 
-        if subm_output.read_text() == expected_output.read_text():
+        if subm_output.read_text(encoding="UTF-8") == expected_output.read_text(
+            encoding="UTF-8"
+        ):
             return TestCase(input_file.stem, Status.AC, end - start, max_mem / 1024**2)
-        else:
-            return TestCase(input_file.stem, Status.WA, end - start, max_mem / 1024**2)
+        return TestCase(input_file.stem, Status.WA, end - start, max_mem / 1024**2)
 
     def _valid_file(self, file):
         """
@@ -245,7 +244,7 @@ class Grader:
 
         raise TypeError(f"file doesn't exist ({file})")
 
-    def _valid_dir(self, dir):
+    def _valid_dir(self, directory):
         """
         Returns a `Path` object if the directory exists and is a regular directory.
 
@@ -258,11 +257,11 @@ class Grader:
         Raises:
             TypeError: If the directory does not exist or is not a regular directory.
         """
-        path = Path(dir)
+        path = Path(directory)
         if path.exists() and path.is_dir():
             return path
 
-        raise TypeError(f"directory doesn't exist ({dir})")
+        raise TypeError(f"directory doesn't exist ({directory})")
 
     def _compile(self):
         """
