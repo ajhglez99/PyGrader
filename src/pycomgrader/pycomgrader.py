@@ -182,16 +182,16 @@ class Grader:
 
         input_file = self._valid_file(input_file)
         expected_output = self._valid_file(expected_output)
-        subm_output = self.exec_file.with_suffix(".out.tmp")
+        submission_output = self.exec_file.with_suffix(".out.tmp")
 
-        with open(input_file, encoding="UTF-8") as in_file, open(
-            subm_output, "w", encoding="UTF-8"
-        ) as out_file:
+        with open(input_file, encoding="UTF-8") as input_file_handle, open(
+            submission_output, "w", encoding="UTF-8"
+        ) as output_file_handle:
             try:
-                proc = subprocess.Popen(
+                process = subprocess.Popen(
                     [("./" + str(self.exec_file))],
-                    stdin=in_file,
-                    stdout=out_file,
+                    stdin=input_file_handle,
+                    stdout=output_file_handle,
                     stderr=subprocess.DEVNULL,
                 )
             except Exception:
@@ -203,27 +203,32 @@ class Grader:
             status = Status.WA
             error_message = None
 
-            while proc.poll() is None:
+            while process.poll() is None:
                 end = time.perf_counter()
                 if end - start > self.time_limit:
-                    self._kill_process_rec(proc.pid)
+                    self._kill_process_rec(process.pid)
                     status = Status.TLE
                     break
 
-                max_mem = max(max_mem, self._get_process_memory(proc.pid))
+                max_mem = max(max_mem, self._get_process_memory(process.pid))
                 if max_mem > self.memory_limit:
-                    self._kill_process_rec(proc.pid)
+                    self._kill_process_rec(process.pid)
                     status = Status.MLE
                     break
 
-            if proc.returncode and status == Status.WA:
+            if process.returncode and status == Status.WA:
                 status = Status.RTE
 
             try:
-                with subm_output.open(
+                with submission_output.open(
                     encoding="UTF-8"
-                ) as subm_file, expected_output.open(encoding="UTF-8") as expected_file:
-                    if subm_file.read() == expected_file.read() and status == Status.WA:
+                ) as submission_file, expected_output.open(
+                    encoding="UTF-8"
+                ) as expected_file:
+                    if (
+                        submission_file.read() == expected_file.read()
+                        and status == Status.WA
+                    ):
                         status = Status.AC
             except Exception as e:
                 status = Status.RTE
