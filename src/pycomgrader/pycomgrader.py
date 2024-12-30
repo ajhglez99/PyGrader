@@ -111,7 +111,7 @@ class Grader:
         if not source_file and not exec_file:
             raise GraderError("expected either a source code file or an executable")
 
-        self.time_limit = time_limit
+        self.time_limit = time_limit / 1000
         self.memory_limit = memory_limit
         self.source_file = source_file
         self.exec_file = exec_file
@@ -182,7 +182,6 @@ class Grader:
 
         input_file = self._valid_file(input_file)
         expected_output = self._valid_file(expected_output)
-
         subm_output = self.exec_file.with_suffix(".out.tmp")
 
         with open(input_file, encoding="UTF-8") as in_file, open(
@@ -197,33 +196,40 @@ class Grader:
                 )
             except Exception:
                 raise GraderError(f"error while executing {self.exec_file}") from None
+
             start = time.perf_counter()
             end = time.perf_counter()
             max_mem = 0
+            status = Status.WA
+            error_message = None
 
             while proc.poll() is None:
                 end = time.perf_counter()
-                if end - start > self.time_limit / 1000:
-                    self._kill(proc.pid)
-                    return TestCase(
-                        input_file.stem, Status.TLE, end - start, max_mem / 1024**2
-                    )
+                if end - start > self.time_limit:
+                    self._kill_process_rec(proc.pid)
+                    status = Status.TLE
+                    break
 
-                max_mem = max(max_mem, self._process_memory(proc.pid))
-                if max_mem / 1024**2 > self.memory_limit:
-                    self._kill(proc.pid)
-                    return TestCase(
-                        input_file.stem, Status.MLE, end - start, max_mem / 1024**2
-                    )
+                max_mem = max(max_mem, self._get_process_memory(proc.pid))
+                if max_mem > self.memory_limit:
+                    self._kill_process_rec(proc.pid)
+                    status = Status.MLE
+                    break
 
-        if proc.returncode:
-            return TestCase(input_file.stem, Status.RTE, end - start, max_mem / 1024**2)
+            if proc.returncode and status == Status.WA:
+                status = Status.RTE
 
-        if subm_output.read_text(encoding="UTF-8") == expected_output.read_text(
-            encoding="UTF-8"
-        ):
-            return TestCase(input_file.stem, Status.AC, end - start, max_mem / 1024**2)
-        return TestCase(input_file.stem, Status.WA, end - start, max_mem / 1024**2)
+            try:
+                with subm_output.open(
+                    encoding="UTF-8"
+                ) as subm_file, expected_output.open(encoding="UTF-8") as expected_file:
+                    if subm_file.read() == expected_file.read() and status == Status.WA:
+                        status = Status.AC
+            except Exception as e:
+                status = Status.RTE
+                error_message = str(e)
+
+            return TestCase(input_file.stem, status, end - start, max_mem)
 
     def _valid_file(self, file):
         """
@@ -280,7 +286,7 @@ class Grader:
         except subprocess.CalledProcessError:
             raise GraderError("compile error") from None
 
-    def _process_memory(self, proc_pid):
+    def _get_process_memory(self, proc_pid):
         """
         Gets the resident set size (RSS) of a process with the given PID.
 
@@ -293,11 +299,11 @@ class Grader:
         try:
             process = psutil.Process(proc_pid)
             mem_info = process.memory_info()
-            return mem_info.rss
+            return mem_info.rss / 1024**2
         except psutil.NoSuchProcess:
             return 0
 
-    def _kill(self, proc_pid):
+    def _kill_process_rec(self, proc_pid):
         """
         Kills a process and all its children.
 

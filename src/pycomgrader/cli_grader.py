@@ -34,7 +34,7 @@ def cli_grader():
     )
     parser.add_argument(
         "dir",
-        type=pathtype.Path(validator=validator_is_dir),
+        type=pathtype.Path(validator=_validator_is_dir),
         help="path to the directory containing the test cases",
     )
     parser.add_argument(
@@ -48,8 +48,8 @@ def cli_grader():
         "mem",
         nargs="?",
         type=int,
-        default=32,
-        help="maximum amount of memory (in megabytes) to allocate to the program",
+        default=256,
+        help="maximum amount of memory (in MB) to use for the program",
     )
     parser.add_argument(
         "-e",
@@ -59,17 +59,19 @@ def cli_grader():
     )
     args = parser.parse_args()
 
-    grade(args.file, args.dir, args.time, args.mem, args.executable)
+    _grade(args.file, args.dir, args.time, args.mem, args.executable)
 
 
-def validator_is_dir(path: Path, _arg: str):
+def _validator_is_dir(path: Path, _arg: str):
     """Validator function for ensuring that a path is a directory."""
 
     if not path.is_dir() or not path.exists():
         raise argparse.ArgumentTypeError(f"directory doesn't exist ({path})")
 
 
-def grade(file, directory, time=1000, mem=32, executable=False):
+def _grade(
+    file: str | Path, directory: str | Path, time=1000, mem=32, executable=False
+):
     """Grades a C++ program using PyGrader."""
 
     if executable:
