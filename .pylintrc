@@ -1,0 +1,16 @@
+[FORMAT]
+max-line-length=100
+
+[MASTER]
+persistent=no
+jobs=1  # Setting jobs to more than 1 can hide pylint results due to parallel processing
+ignore-paths=
+    .venv,
+    build,
+
+[MESSAGES CONTROL]
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    protected-access,
