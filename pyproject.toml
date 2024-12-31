@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pycomgrader"
-version = "1.0.1"
+version = "1.1.0"
 description = "This module provides a grader for c++ programs."
 readme = "README.md"
 authors = [{ name = "Anibal Hernández"}]
@@ -15,8 +15,8 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 keywords = ["competitive programming", "educational", "grader", "c++"]
-dependencies = ["psutil", "pathtype", "rich"]
-requires-python = ">=3.7"
+dependencies = ["psutil", "rich"]
+requires-python = ">=3.10"
 
 [project.urls]
 Homepage = "https://github.com/ajhglez99/PyComGrader"

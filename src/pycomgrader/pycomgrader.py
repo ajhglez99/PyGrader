@@ -89,7 +89,6 @@ class Grader:
         self.memory_limit = memory_limit
         self._source_file = self._valid_file(source_file) if source_file else None
         self._exec_file = self._valid_file(exec_file) if exec_file else None
-        self._compiled = bool(exec_file)
 
     @property
     def source_file(self):
@@ -100,7 +99,6 @@ class Grader:
         self._source_file = self._valid_file(source_file) if source_file else None
         if self._source_file:
             self._exec_file = None
-            self._compiled = False
 
     @property
     def exec_file(self):
@@ -111,7 +109,6 @@ class Grader:
         self._exec_file = self._valid_file(exec_file) if exec_file else None
         if self._exec_file:
             self._source_file = None
-            self._compiled = True
 
     def grade(self, test_cases_dir: str | Path):
         """
@@ -130,7 +127,8 @@ class Grader:
         results = []
 
         for input_file, output_file in zip(in_list, out_list):
-            results.append(self.check_test_case(input_file, output_file))
+            test_case = self.check_test_case(input_file, output_file)
+            results.append(test_case)
 
         return results
 
@@ -146,16 +144,17 @@ class Grader:
             TestCase: An object containing information about the test case, including its name,
             status, execution time, and memory usage.
         """
-        if not self._compiled:
+        if self.exec_file is None:
             self._compile()
 
         input_file = self._valid_file(input_file)
         expected_output = self._valid_file(expected_output)
         submission_output = self.exec_file.with_suffix(".out.tmp")
 
-        with open(input_file, encoding="UTF-8") as input_file_handle, open(
-            submission_output, "w", encoding="UTF-8"
-        ) as output_file_handle:
+        with (
+            open(input_file, encoding="UTF-8") as input_file_handle,
+            open(submission_output, "w", encoding="UTF-8") as output_file_handle,
+        ):
             process = self._start_process(input_file_handle, output_file_handle)
             start = time.perf_counter()
             max_mem = 0
@@ -222,7 +221,6 @@ class Grader:
                 ["g++", self._source_file, "-o", self._source_file.with_suffix(".o")],
                 stderr=subprocess.DEVNULL,
             )
-            self._compiled = True
             self.exec_file = self._source_file.with_suffix(".o")
         except subprocess.CalledProcessError:
             raise GraderError("compile error") from None
@@ -288,9 +286,10 @@ class Grader:
             tuple: The status and error message.
         """
         try:
-            with submission_output.open(
-                encoding="UTF-8"
-            ) as subm_file, expected_output.open(encoding="UTF-8") as expected_file:
+            with (
+                submission_output.open(encoding="UTF-8") as subm_file,
+                expected_output.open(encoding="UTF-8") as expected_file,
+            ):
                 if subm_file.read() == expected_file.read():
                     return Status.AC, None
                 return Status.WA, None
