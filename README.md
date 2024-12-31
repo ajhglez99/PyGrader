@@ -1,4 +1,4 @@
-# PyComGrader: A Python Module for Grading C++ Programs
+# PyComGrader: A Python Package for Grading C++ Programs
 
 ## Table of Contents
 - [Introduction](#introduction)
@@ -19,7 +19,7 @@
 
 ## Introduction
 
-PyComGrader is a Python module designed to help educators and students easily evaluate and grade C++ programs against multiple test cases. It provides a simple and efficient way to test programs against multiple test cases and can be used on multiple platforms, including Windows and Linux. The module can be used as a command-line tool and provides various options to customize the grading process. PyComGrader aims to simplify the process of setting up training contests offline, testing problems against multiple test cases during a contest to get preliminary results, and helping prepare and form competitive programmers. However, please note that this module is not intended for official contests and is solely meant as an educational tool.
+PyComGrader is a Python package designed to help educators and students easily evaluate and grade C++ programs against multiple test cases. It provides a simple and efficient way to test programs against multiple test cases and can be used on multiple platforms, including Windows and Linux. The package can be used as a command-line tool and provides various options to customize the grading process. PyComGrader aims to simplify the process of setting up training contests offline, testing problems against multiple test cases during a contest to get preliminary results, and helping prepare and form competitive programmers. However, please note that this package is not intended for official contests and is solely meant as an educational tool.
 
 ## Features
 
