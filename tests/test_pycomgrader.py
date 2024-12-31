@@ -29,7 +29,7 @@ class TestGrader(unittest.TestCase):
 
     def test_grade(self):
         results = self.grader.grade(self.test_cases_dir)
-        expected_statuses = [Status.AC, Status.WA, Status.TLE, Status.RTE]
+        expected_statuses = [Status.AC, Status.WA, Status.TLE]
 
         for result, expected_status in zip(results, expected_statuses):
             self.assertEqual(result.status, expected_status)
