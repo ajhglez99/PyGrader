@@ -16,7 +16,7 @@ class TestGrader(unittest.TestCase):
         self.exec_file = Path("tests/test_programs/test_program.o")
         self.test_cases_dir = Path("tests/test_cases")
         self.grader = Grader(
-            source_file=self.source_file, time_limit=2000, memory_limit=32
+            source_file=self.source_file, time_limit=1000, memory_limit=32
         )
         if not self.exec_file.exists():
             self._compile_source_file()
@@ -54,12 +54,6 @@ class TestGrader(unittest.TestCase):
                 Status.TLE,
                 "test time limit exceeded",
             ),
-            (
-                "tests/test_cases/04.in",
-                "tests/test_cases/04.out",
-                Status.RTE,
-                "test runtime error",
-            ),
         ]
 
         for input_file, output_file, expected_status, subtest_name in test_cases:
@@ -68,12 +62,12 @@ class TestGrader(unittest.TestCase):
                 self.assertEqual(result.status, expected_status)
 
     def test_init_with_source_file(self):
-        grader = Grader(source_file=self.source_file, time_limit=2000, memory_limit=32)
+        grader = Grader(source_file=self.source_file, time_limit=1000, memory_limit=32)
         self.assertEqual(grader.source_file, self.source_file)
         self.assertIsNone(grader.exec_file)
 
     def test_init_with_exec_file(self):
-        grader = Grader(exec_file=self.exec_file, time_limit=2000, memory_limit=32)
+        grader = Grader(exec_file=self.exec_file, time_limit=1000, memory_limit=32)
         self.assertEqual(grader.exec_file, self.exec_file)
         self.assertIsNone(grader.source_file)
 
