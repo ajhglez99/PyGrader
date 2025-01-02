@@ -16,7 +16,15 @@ class TestCLIGrader(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.source_file = Path("tests/test_programs/test_program.cpp")
+        cls.exec_file = Path("tests/test_programs/test_program.o")
         cls.test_cases_dir = Path("tests/test_cases")
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.exec_file.exists():
+            cls.exec_file.unlink()
+        for tmp_file in Path("tests/test_programs").glob("*.tmp"):
+            tmp_file.unlink()
 
     def _run_cli_grader_with_args(self, args, expected_exception, expected_code=None):
         sys.argv = args
