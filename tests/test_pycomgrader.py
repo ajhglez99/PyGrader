@@ -11,19 +11,28 @@ except ImportError:
 
 class TestGrader(unittest.TestCase):
 
-    def setUp(self):
-        self.source_file = Path("tests/test_programs/test_program.cpp")
-        self.exec_file = Path("tests/test_programs/test_program.o")
-        self.test_cases_dir = Path("tests/test_cases")
-        self.grader = Grader(
-            source_file=self.source_file, time_limit=1000, memory_limit=32
+    @classmethod
+    def setUpClass(cls):
+        cls.source_file = Path("tests/test_programs/test_program.cpp")
+        cls.exec_file = Path("tests/test_programs/test_program.o")
+        cls.test_cases_dir = Path("tests/test_cases")
+        cls.grader = Grader(
+            source_file=cls.source_file, time_limit=1000, memory_limit=32
         )
-        if not self.exec_file.exists():
-            self._compile_source_file()
+        if not cls.exec_file.exists():
+            cls._compile_source_file()
 
-    def _compile_source_file(self):
+    @classmethod
+    def tearDownClass(cls):
+        if cls.exec_file.exists():
+            cls.exec_file.unlink()
+        for tmp_file in Path("tests/test_programs").glob("*.tmp"):
+            tmp_file.unlink()
+
+    @classmethod
+    def _compile_source_file(cls):
         subprocess.run(
-            ["g++", self.source_file, "-o", self.exec_file],
+            ["g++", cls.source_file, "-o", cls.exec_file],
             check=True,
         )
 
