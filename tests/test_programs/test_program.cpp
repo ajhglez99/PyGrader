@@ -1,8 +1,6 @@
 #include <iostream>
 #include <bits/stdc++.h>
 
-#define MAXN 1000000
-
 using namespace std;
 
 int main()
@@ -20,10 +18,6 @@ int main()
 
     for (int i = 0; i < m; i++){
         suma += (s[i] - 'A' + 1);
-    }
-    
-    if (suma == 1){
-        suma /= 0;
     }
     
     if (suma == 367)
