@@ -29,7 +29,7 @@ class StatusMessage(Enum):
     CE = "[bold blue]compile error[/bold blue]"
 
 
-def cli_grader():
+def run_cli_grader():
     """
     Command-line interface for grading C++ programs.
     """
@@ -158,4 +158,4 @@ def _print_results(console, file, results):
 
 
 if __name__ == "__main__":
-    cli_grader()
+    run_cli_grader()

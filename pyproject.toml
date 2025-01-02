@@ -22,4 +22,4 @@ requires-python = ">=3.10"
 Homepage = "https://github.com/ajhglez99/PyComGrader"
 
 [project.scripts]
-pycomgrader = "pycomgrader.cli_grader:cli_grader"
+pycomgrader = "pycomgrader.cli_grader:run_cli_grader"
