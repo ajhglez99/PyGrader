@@ -13,6 +13,9 @@ except ImportError:
 
 class TestCLIGrader(unittest.TestCase):
 
+    FINAL_SCORE_STRING = "final score:"
+    COMPILE_ERROR_STRING = "compile error"
+
     @classmethod
     def setUpClass(cls):
         cls.source_file = Path("tests/test_programs/test_program.cpp")
@@ -27,11 +30,11 @@ class TestCLIGrader(unittest.TestCase):
             tmp_file.unlink()
 
     def _run_cli_grader_with_args(self, args, expected_exception, expected_code=None):
-        sys.argv = args
-        with self.assertRaises(expected_exception) as cm:
-            cli_grader.run_cli_grader()
-        if expected_code is not None:
-            self.assertEqual(cm.exception.code, expected_code)
+        with patch.object(sys, "argv", args):
+            with self.assertRaises(expected_exception) as context_manager:
+                cli_grader.run_cli_grader()
+            if expected_code is not None:
+                self.assertEqual(context_manager.exception.code, expected_code)
 
     def test_invalid_file_argument(self):
         self._run_cli_grader_with_args(
@@ -71,21 +74,39 @@ class TestCLIGrader(unittest.TestCase):
             expected_code=2,
         )
 
-    @patch("sys.stdout", new_callable=io.StringIO)
-    def test_results_printed_properly(self, mock_stdout):
-        sys.argv = [
-            "pycomgrader",
-            str(self.source_file),
-            str(self.test_cases_dir),
-            "1000",
-            "32",
-        ]
-        try:
-            cli_grader.run_cli_grader()
-        except SystemExit:
-            pass
-        output = mock_stdout.getvalue()
-        self.assertIn("final score:", output)
+    def test_results_printed_properly(self):
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
+            with patch.object(
+                sys,
+                "argv",
+                [
+                    "pycomgrader",
+                    str(self.source_file),
+                    str(self.test_cases_dir),
+                    "1000",
+                    "32",
+                ],
+            ):
+                cli_grader.run_cli_grader()
+                output = mock_stdout.getvalue()
+                self.assertIn(self.FINAL_SCORE_STRING, output)
+
+    def test_compile_error(self):
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
+            with patch.object(
+                sys,
+                "argv",
+                [
+                    "pycomgrader",
+                    "tests/test_programs/compile_error_program.cpp",
+                    str(self.test_cases_dir),
+                    "1000",
+                    "32",
+                ],
+            ):
+                cli_grader.run_cli_grader()
+                output = mock_stdout.getvalue()
+                self.assertIn(self.COMPILE_ERROR_STRING, output)
 
 
 if __name__ == "__main__":
