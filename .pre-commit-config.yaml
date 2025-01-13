@@ -16,14 +16,14 @@ repos:
 -   repo: https://github.com/PyCQA/flake8
     rev: 7.1.0
     hooks:
-    - id: flake8
+    -   id: flake8
 -   repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
-    - id: isort
--   repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.1
+    -   id: isort
+-   repo: https://github.com/adamchainz/blacken-docs
+    rev: 1.18.0
     hooks:
-    - id: docformatter
-    additional_dependencies: [tomli]
-    args: [--in-place, --config, ./pyproject.toml]
+    -   id: blacken-docs
+        additional_dependencies:
+        - black==24.4.2
