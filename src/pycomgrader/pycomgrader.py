@@ -159,16 +159,13 @@ class Grader:
             start = time.perf_counter()
             max_mem = 0
 
-            status, error_message, max_mem = self._monitor_process(
-                process, start, max_mem
-            )
+            status, max_mem = self._monitor_process(process, start, max_mem)
             end = time.perf_counter()
 
         if status is None:
-            status, error_message = self._compare_output(
-                submission_output, expected_output
-            )
+            status = self._compare_output(submission_output, expected_output)
 
+        error_message = process.stderr
         return TestCase(input_file.stem, status, end - start, max_mem, error_message)
 
     def _valid_file(self, file):
@@ -241,7 +238,7 @@ class Grader:
                 [os.path.join(".", str(self.exec_file))],
                 stdin=input_file_handle,
                 stdout=output_file_handle,
-                stderr=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
             )
         except Exception:
             raise GraderError(f"error while executing {self.exec_file}") from None
@@ -262,17 +259,17 @@ class Grader:
             time.sleep(0.001)
             if self._is_time_limit_exceeded(start):
                 self._kill_process_rec(process.pid)
-                return Status.TLE, None, max_mem
+                return Status.TLE, max_mem
 
             max_mem = max(max_mem, self._get_process_memory(process.pid))
             if max_mem > self.memory_limit:
                 self._kill_process_rec(process.pid)
-                return Status.MLE, None, max_mem
+                return Status.MLE, max_mem
 
         if process.returncode:
-            return Status.RTE, None, max_mem
+            return Status.RTE, max_mem
 
-        return None, None, max_mem
+        return None, max_mem
 
     def _compare_output(self, submission_output, expected_output):
         """
@@ -291,8 +288,8 @@ class Grader:
                 expected_output.open(encoding="UTF-8") as expected_file,
             ):
                 if subm_file.read() == expected_file.read():
-                    return Status.AC, None
-                return Status.WA, None
+                    return Status.AC
+                return Status.WA
         except Exception:
             raise GraderError("error while trying to open output files") from None
 

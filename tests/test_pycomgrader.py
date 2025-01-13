@@ -99,9 +99,8 @@ class TestGrader(unittest.TestCase):
     def test_monitor_process_time_limit_exceeded(self):
         with subprocess.Popen(["sleep", "10"]) as process:
             start = time.perf_counter()
-            status, error_message, _ = self.grader._monitor_process(process, start, 0)
+            status, _ = self.grader._monitor_process(process, start, 0)
             self.assertEqual(status, Status.TLE)
-            self.assertIsNone(error_message)
             process.terminate()
             process.wait()
 
@@ -110,18 +109,16 @@ class TestGrader(unittest.TestCase):
             ["python", "-c", "a = ' ' * 1024**3"]
         ) as process:  # Allocate 1GB
             start = time.perf_counter()
-            status, error_message, _ = self.grader._monitor_process(process, start, 0)
+            status, _ = self.grader._monitor_process(process, start, 0)
             self.assertEqual(status, Status.MLE)
-            self.assertIsNone(error_message)
             process.terminate()
             process.wait()
 
     def test_monitor_process_runtime_error(self):
         with subprocess.Popen(["python", "-c", "import sys; sys.exit(1)"]) as process:
             start = time.perf_counter()
-            status, error_message, _ = self.grader._monitor_process(process, start, 0)
+            status, _ = self.grader._monitor_process(process, start, 0)
             self.assertEqual(status, Status.RTE)
-            self.assertIsNone(error_message)
             process.terminate()
             process.wait()
 
