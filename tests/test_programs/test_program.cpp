@@ -19,13 +19,13 @@ int main()
     for (int i = 0; i < m; i++){
         suma += (s[i] - 'A' + 1);
     }
-    
+
     if (suma == 367)
         for (int i = 0; i < 10000000; i++){
             cout << suma << endl;
         }
     cout << suma << "\n";
-    
+
     if (suma % 2){
         cout << suma;
     }
