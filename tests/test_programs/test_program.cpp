@@ -1,10 +1,24 @@
 #include <iostream>
-#include <bits/stdc++.h>
 
 using namespace std;
 
-int main()
-{
+/**
+ * @file test_program.cpp
+ * @brief This program calculates the sum of the positions of uppercase letters
+ * in the alphabet from a given string.
+ *
+ * The program reads a string of uppercase letters and computes the sum of their
+ * positions, where 'A' is 1, 'B' is 2, ..., 'Z' is 26. It then checks if the
+ * calculated sum is equal to 55; if so, it increments the sum by 1. This
+ * simulates an error condition where the sum is intentionally altered.
+ *
+ * After that, it checks if the sum equals 367. If the sum is exactly 367, the
+ * program enters an infinite loop, simulating a time limit exceeded situation
+ *
+ * Finally, the program prints the final value of the sum.
+ */
+
+int main() {
     ios::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
@@ -16,19 +30,21 @@ int main()
     suma = 0;
     m = s.size();
 
-    for (int i = 0; i < m; i++){
+    for (int i = 0; i < m; i++) {
         suma += (s[i] - 'A' + 1);
     }
-
-    if (suma == 367)
-        for (int i = 0; i < 10000000; i++){
-            cout << suma << endl;
-        }
-    cout << suma << "\n";
-
-    if (suma % 2){
-        cout << suma;
+    
+    // Simulate an error condition by incrementing the sum if it equals 55
+    if (suma == 55) {
+        suma++;
     }
+
+    // Simulate a time limit exceeded situation by entering an infinite loop if the sum equals 367
+    if (suma == 367)
+        while (1) {
+        }
+
+    cout << suma << "\n";
 
     return 0;
 }
