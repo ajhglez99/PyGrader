@@ -33,7 +33,7 @@ int main() {
     for (int i = 0; i < m; i++) {
         suma += (s[i] - 'A' + 1);
     }
-    
+
     // Simulate an error condition by incrementing the sum if it equals 55
     if (suma == 55) {
         suma++;
