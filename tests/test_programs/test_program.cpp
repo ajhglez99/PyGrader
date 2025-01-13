@@ -23,28 +23,28 @@ int main() {
     cin.tie(0);
     cout.tie(0);
 
-    int suma, m;
+    int sum, m;
     string s;
 
     cin >> s;
-    suma = 0;
+    sum = 0;
     m = s.size();
 
     for (int i = 0; i < m; i++) {
-        suma += (s[i] - 'A' + 1);
+        sum += (s[i] - 'A' + 1);
     }
 
     // Simulate an error condition by incrementing the sum if it equals 55
-    if (suma == 55) {
-        suma++;
+    if (sum == 55) {
+        sum++;
     }
 
     // Simulate a time limit exceeded situation by entering an infinite loop if the sum equals 367
-    if (suma == 367)
+    if (sum == 367)
         while (1) {
         }
 
-    cout << suma << "\n";
+    cout << sum << "\n";
 
     return 0;
 }
