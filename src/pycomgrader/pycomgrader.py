@@ -248,12 +248,12 @@ class Grader:
         Monitors the process for time and memory limits.
 
         Parameters:
-            process (subprocess.Popen): The process object.
-            start (float): The start time.
-            max_mem (float): The maximum memory used.
+            process (subprocess.Popen): The process object for the executed program.
+            start (float): The start time of the process execution.
+            max_mem (float): The maximum memory used by the process so far.
 
         Returns:
-            tuple: The status and error message.
+            tuple: A tuple containing the status of the test case and the maximum memory used.
         """
         while process.poll() is None:
             time.sleep(0.001)
@@ -280,7 +280,10 @@ class Grader:
             expected_output (Path): The path to the expected output file.
 
         Returns:
-            tuple: The status and error message.
+            Status: The status of the test case based on the comparison.
+
+        Raises:
+            GraderError: If there is an error while trying to open the output files.
         """
         try:
             with (
