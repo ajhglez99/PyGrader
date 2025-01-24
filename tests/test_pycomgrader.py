@@ -10,6 +10,7 @@ except ImportError:
 
 
 class TestGrader(unittest.TestCase):
+    # pylint: disable=protected-access
 
     @classmethod
     def setUpClass(cls):
